@@ -1,0 +1,82 @@
+# Expense Tracker App - Amharic Translation
+# Copyright (C) 2025
+#
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+
+#: main.py:25
+msgid "expense_tracker"
+msgstr "የወጭ መቆጣጠሪያ"
+
+#: main.py:30
+msgid "amount"
+msgstr "መጠን"
+
+#: main.py:34
+msgid "category"
+msgstr "ምድብ"
+
+#: main.py:38
+msgid "note"
+msgstr "ማስታወሻ (በምርጫ)"
+
+#: main.py:41
+msgid "add_expense"
+msgstr "ወጭ ያክሉ"
+
+#: main.py:47
+msgid "total"
+msgstr "ጠቅላላ"
+
+#: main.py:48
+msgid "date"
+msgstr "ቀን"
+
+#: main.py:49
+msgid "edit"
+msgstr "አርትዕ"
+
+#: main.py:50
+msgid "delete"
+msgstr "ሰርዝ"
+
+#: main.py:51
+msgid "language"
+msgstr "ቋንቋ"
+
+#: main.py:52
+msgid "english"
+msgstr "እንግሊዝኛ"
+
+#: main.py:53
+msgid "amharic"
+msgstr "አማርኛ"
+
+#: main.py:54
+msgid "oromo"
+msgstr "ኦሮሞ"
+
+#: main.py:55
+msgid "expense_list"
+msgstr "የወጭ ዝርዝር"
+
+#: main.py:56
+msgid "no_expenses"
+msgstr "እስካሁን የተመዘገበ ወጭ የለም"
+
+#: main.py:57
+msgid "select_language"
+msgstr "ቋንቋ ይምረጡ"
+
+#: main.py:58
+msgid "clear"
+msgstr "አጽዳ"
+
+#: main.py:59
+msgid "fill_all_fields"
+msgstr "እባክዎን ሁሉንም የተጠየቁ መስኮች ይሙሉ"
+
+#: main.py:60
+msgid "ok"
+msgstr "እሺ"

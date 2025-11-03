@@ -1,0 +1,82 @@
+# Expense Tracker App - Oromo Translation
+# Copyright (C) 2025
+#
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+
+#: main.py:25
+msgid "expense_tracker"
+msgstr "Trackera Dabarsaa"
+
+#: main.py:30
+msgid "amount"
+msgstr "Hammanta"
+
+#: main.py:34
+msgid "category"
+msgstr "Gosa"
+
+#: main.py:38
+msgid "note"
+msgstr "Yaadannoo (filannoo)"
+
+#: main.py:41
+msgid "add_expense"
+msgstr "Dabarsa Dabali"
+
+#: main.py:47
+msgid "total"
+msgstr "Waliin Galaa"
+
+#: main.py:48
+msgid "date"
+msgstr "Guyyaa"
+
+#: main.py:49
+msgid "edit"
+msgstr "Gulaali"
+
+#: main.py:50
+msgid "delete"
+msgstr "Balleessi"
+
+#: main.py:51
+msgid "language"
+msgstr "Afaan"
+
+#: main.py:52
+msgid "english"
+msgstr "Ingliffaa"
+
+#: main.py:53
+msgid "amharic"
+msgstr "Amaara"
+
+#: main.py:54
+msgid "oromo"
+msgstr "Oromoo"
+
+#: main.py:55
+msgid "expense_list"
+msgstr "Tarree Dabarsaa"
+
+#: main.py:56
+msgid "no_expenses"
+msgstr "Dabarsaan hin jiru"
+
+#: main.py:57
+msgid "select_language"
+msgstr "Afaan filadhu"
+
+#: main.py:58
+msgid "clear"
+msgstr "Haquu"
+
+#: main.py:59
+msgid "fill_all_fields"
+msgstr "Meeshaa bu'uuraa hunda guuti"
+
+#: main.py:60
+msgid "ok"
+msgstr "TOO"

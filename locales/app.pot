@@ -1,0 +1,30 @@
+# Expense Tracker App - Translation Template
+# Copyright (C) 2025
+#
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+
+#: main.py:25
+msgid "expense_tracker"
+msgstr ""
+
+#: main.py:30
+msgid "amount"
+msgstr ""
+
+#: main.py:34
+msgid "category"
+msgstr ""
+
+#: main.py:38
+msgid "note"
+msgstr ""
+
+#: main.py:41
+msgid "add_expense"
+msgstr ""
+
+#: main.py:47
+msgid "total"
+msgstr ""

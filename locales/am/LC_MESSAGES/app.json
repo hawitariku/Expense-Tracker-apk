@@ -1,0 +1,9 @@
+{
+  "expense_tracker": "የወጭ መቆጣጠሪያ",
+  "amount": "መጠን",
+  "category": "ምድብ",
+  "note": "ማስታወሻ (በምርጫ)",
+  "add_expense": "ወጭ ያክሉ",
+  "total": "ጠቅላላ",
+  "currency": "ETB"
+}

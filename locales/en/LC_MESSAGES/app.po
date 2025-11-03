@@ -1,0 +1,82 @@
+# Expense Tracker App - English Translation
+# Copyright (C) 2025
+#
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+
+#: main.py:25
+msgid "expense_tracker"
+msgstr "Expense Tracker"
+
+#: main.py:30
+msgid "amount"
+msgstr "Amount"
+
+#: main.py:34
+msgid "category"
+msgstr "Category"
+
+#: main.py:38
+msgid "note"
+msgstr "Note (optional)"
+
+#: main.py:41
+msgid "add_expense"
+msgstr "Add Expense"
+
+#: main.py:47
+msgid "total"
+msgstr "Total"
+
+#: main.py:48
+msgid "date"
+msgstr "Date"
+
+#: main.py:49
+msgid "edit"
+msgstr "Edit"
+
+#: main.py:50
+msgid "delete"
+msgstr "Delete"
+
+#: main.py:51
+msgid "language"
+msgstr "Language"
+
+#: main.py:52
+msgid "english"
+msgstr "English"
+
+#: main.py:53
+msgid "amharic"
+msgstr "Amharic"
+
+#: main.py:54
+msgid "oromo"
+msgstr "Oromo"
+
+#: main.py:55
+msgid "expense_list"
+msgstr "Expense List"
+
+#: main.py:56
+msgid "no_expenses"
+msgstr "No expenses recorded yet"
+
+#: main.py:57
+msgid "select_language"
+msgstr "Select Language"
+
+#: main.py:58
+msgid "clear"
+msgstr "Clear"
+
+#: main.py:59
+msgid "fill_all_fields"
+msgstr "Please fill in all required fields"
+
+#: main.py:60
+msgid "ok"
+msgstr "OK"

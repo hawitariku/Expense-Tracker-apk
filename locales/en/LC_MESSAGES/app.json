@@ -1,0 +1,9 @@
+{
+  "expense_tracker": "Expense Tracker",
+  "amount": "Amount",
+  "category": "Category",
+  "note": "Note (optional)",
+  "add_expense": "Add Expense",
+  "total": "Total",
+  "currency": "ETB"
+}
