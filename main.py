@@ -1,5 +1,6 @@
 import os
 import gettext
+import json
 import datetime
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
@@ -34,23 +35,51 @@ def init_translations():
             translators['en'] = en_translator.gettext
         except:
             # Fallback to dummy translator
-            translators['en'] = lambda x: x
+            # Try JSON fallback (locales/en/LC_MESSAGES/app.json)
+            json_path = os.path.join(locales_dir, 'en', 'LC_MESSAGES', 'app.json')
+            if os.path.exists(json_path):
+                try:
+                    with open(json_path, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                    translators['en'] = lambda s, d=data: d.get(s, s)
+                except Exception:
+                    translators['en'] = lambda x: x
+            else:
+                translators['en'] = lambda x: x
             
         # Amharic translator
         try:
             am_translator = gettext.translation('app', locales_dir, languages=['am'])
             translators['am'] = am_translator.gettext
         except:
-            # Fallback to dummy translator
-            translators['am'] = lambda x: x
+            # Try JSON fallback (locales/am/LC_MESSAGES/app.json)
+            json_path = os.path.join(locales_dir, 'am', 'LC_MESSAGES', 'app.json')
+            if os.path.exists(json_path):
+                try:
+                    with open(json_path, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                    translators['am'] = lambda s, d=data: d.get(s, s)
+                except Exception:
+                    translators['am'] = lambda x: x
+            else:
+                translators['am'] = lambda x: x
             
         # Oromo translator
         try:
             om_translator = gettext.translation('app', locales_dir, languages=['om'])
             translators['om'] = om_translator.gettext
         except:
-            # Fallback to dummy translator
-            translators['om'] = lambda x: x
+            # Try JSON fallback (locales/om/LC_MESSAGES/app.json)
+            json_path = os.path.join(locales_dir, 'om', 'LC_MESSAGES', 'app.json')
+            if os.path.exists(json_path):
+                try:
+                    with open(json_path, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                    translators['om'] = lambda s, d=data: d.get(s, s)
+                except Exception:
+                    translators['om'] = lambda x: x
+            else:
+                translators['om'] = lambda x: x
 
 # Initialize translations
 init_translations()
