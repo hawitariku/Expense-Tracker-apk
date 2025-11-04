@@ -76,6 +76,14 @@ The first build will take 10-30 minutes as it downloads the Android SDK, NDK, an
 
 The APK will be located in the `bin/` folder: `bin/expense_tracker-1.0-debug.apk`
 
+## Continuous Integration (optional)
+
+A GitHub Actions workflow is included to build the APK in CI. Push to the `main` branch or run the workflow manually to start a build on GitHub-hosted runners. The workflow will attempt to install system packages, run Buildozer and upload the resulting APK as an artifact.
+
+Notes:
+- CI builds are long-running (first run downloads Android SDK/NDK and toolchains) and may require a runner timeout increase.
+- The workflow file is `.github/workflows/build-apk.yml` in the repository.
+
 ### Installing the APK
 
 You can install the APK on your Android device by:

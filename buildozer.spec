@@ -168,7 +168,7 @@ android.ndk = 25b
 
 # (str) Android arch to build for (only applicable for android_new target)
 # This can be any of armeabi-v7a, arm64-v8a, x86, or x86_64
-#android.arch = arm64-v8a
+android.arch = arm64-v8a
 
 # (bool) If True, then skip trying to update the Android sdk
 # This can be useful to avoid excess Internet downloads or save time

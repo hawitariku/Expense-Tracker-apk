@@ -1,0 +1,75 @@
+name: Build Android APK (Buildozer)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 240
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Restore pip cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}-v1
+
+      - name: Restore buildozer cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .buildozer
+            .buildozer/android/platform/packages
+          key: ${{ runner.os }}-buildozer-${{ github.sha }}
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install APT packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            git build-essential autoconf automake libtool pkg-config m4 gettext zip unzip \
+            zlib1g-dev libssl-dev libbz2-dev libreadline-dev libsqlite3-dev libffi-dev \
+            libncurses-dev liblzma-dev tk-dev libgdbm-dev curl openjdk-17-jdk-headless \
+            android-sdk adb fastboot libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
+
+      - name: Create Python venv and install pip deps
+        run: |
+          python3 -m venv .venv
+          source .venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install buildozer==1.5.0
+          pip install -r requirements.txt
+          pip install polib
+
+      - name: Compile translations
+        run: |
+          source .venv/bin/activate
+          python compile_translations.py
+
+      - name: Run Buildozer (android debug)
+        env:
+          BUILD_IS_CI: '1'
+        run: |
+          source .venv/bin/activate
+          # Ensure buildozer picks up the repo root and build only arm64-v8a for speed
+          buildozer -v android debug || buildozer android debug
+
+      - name: Upload APK artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: expense-tracker-apk
+          path: |
+            bin/*.apk
+            .buildozer/android/platform/build-*/*/bin/*.apk
