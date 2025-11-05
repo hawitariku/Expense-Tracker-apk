@@ -19,6 +19,7 @@ from kivymd.uix.button import MDRaisedButton, MDFlatButton, MDIconButton
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.selectioncontrol import MDCheckbox
+from kivymd.uix.snackbar import MDSnackbar
 from tinydb import TinyDB, Query
 
 # Global variables for language selection
@@ -528,8 +529,7 @@ class ExpenseTrackerApp(MDApp):
         self.show_notification(_("expenses_deleted"))
 
     def show_notification(self, message):
-        # Placeholder for notification implementation
-        print(f"Notification: {message}")
+        MDSnackbar(text=message).open()
 
 if __name__ == "__main__":
     ExpenseTrackerApp().run()
