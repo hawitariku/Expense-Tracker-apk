@@ -9,14 +9,16 @@ from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivy.properties import ObjectProperty
 from kivy.core.text import LabelBase
+from kivy.metrics import dp
 
 # Register the Amharic font
 LabelBase.register(name='AmharicFont', fn_regular='fonts/NotoSansEthiopic-Regular.ttf')
 from kivymd.app import MDApp
 from kivymd.uix.list import OneLineListItem, TwoLineListItem
-from kivymd.uix.button import MDRaisedButton, MDFlatButton
+from kivymd.uix.button import MDRaisedButton, MDFlatButton, MDIconButton
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.menu import MDDropdownMenu
+from kivymd.uix.selectioncontrol import MDCheckbox
 from tinydb import TinyDB, Query
 
 # Global variables for language selection
@@ -103,7 +105,8 @@ def _(message):
 # Pre-translate strings
 def update_translations():
     global EXPENSE_TRACKER, AMOUNT, CATEGORY, NOTE, ADD_EXPENSE, TOTAL, DATE, EDIT, DELETE
-    global LANGUAGE, ENGLISH, AMHARIC, OROMO, EXPENSE_LIST, NO_EXPENSES, SELECT_LANGUAGE
+    global LANGUAGE, ENGLISH, AMHARIC, OROMO, EXPENSE_LIST, NO_EXPENSES, SELECT_LANGUAGE, CLEAR
+    global FILL_ALL_FIELDS, OK, CANCEL, DELETE_ALL, NO_EXPENSES_SELECTED, EXPENSE_DELETED, EXPENSES_DELETED
     EXPENSE_TRACKER = _("expense_tracker")
     AMOUNT = _("amount")
     CATEGORY = _("category")
@@ -120,6 +123,14 @@ def update_translations():
     EXPENSE_LIST = _("expense_list")
     NO_EXPENSES = _("no_expenses")
     SELECT_LANGUAGE = _("select_language")
+    CLEAR = _("clear")
+    FILL_ALL_FIELDS = _("fill_all_fields")
+    OK = _("ok")
+    CANCEL = _("cancel")
+    DELETE_ALL = _("delete_all")
+    NO_EXPENSES_SELECTED = _("no_expenses_selected")
+    EXPENSE_DELETED = _("expense_deleted")
+    EXPENSES_DELETED = _("expenses_deleted")
     
     # Debug print to see what translations are loaded
     print(f"=== Language Switch Debug ===")
@@ -212,9 +223,17 @@ KV = """
             size_hint_y: None
             height: dp(30)
         
+        MDRaisedButton:
+            id: delete_selected_button
+            text: "Delete Selected"
+            on_release: app.confirm_delete_expense()
+            size_hint_x: 1.0
+        
         ScrollView:
             MDList:
                 id: expense_list
+                # Add a delete button to each item
+                # This will be dynamically added in Python
 """
 
 db = TinyDB("expenses.json")
@@ -225,6 +244,7 @@ class MainScreen(Screen):
 class ExpenseTrackerApp(MDApp):
     dialog = None
     language_menu = None
+    selected_expenses = ObjectProperty([])
     
     def build(self):
         self.sm = ScreenManager()
@@ -306,8 +326,9 @@ class ExpenseTrackerApp(MDApp):
         main_screen.ids.category.hint_text = CATEGORY
         main_screen.ids.note.hint_text = NOTE
         main_screen.ids.add_button.text = ADD_EXPENSE
-        main_screen.ids.clear_button.text = _("clear")
+        main_screen.ids.clear_button.text = CLEAR
         main_screen.ids.expense_list_label.text = EXPENSE_LIST
+        main_screen.ids.delete_selected_button.text = DELETE_ALL
         
         # Apply Amharic font if current language is Amharic
         if current_language == 'am':
@@ -318,6 +339,7 @@ class ExpenseTrackerApp(MDApp):
             main_screen.ids.add_button.font_name = 'AmharicFont'
             main_screen.ids.clear_button.font_name = 'AmharicFont'
             main_screen.ids.expense_list_label.font_name = 'AmharicFont'
+            main_screen.ids.delete_selected_button.font_name = 'AmharicFont'
         else:
             # Reset to default font for other languages
             main_screen.ids.title_label.font_name = 'Roboto'
@@ -327,6 +349,7 @@ class ExpenseTrackerApp(MDApp):
             main_screen.ids.add_button.font_name = 'Roboto'
             main_screen.ids.clear_button.font_name = 'Roboto'
             main_screen.ids.expense_list_label.font_name = 'Roboto'
+            main_screen.ids.delete_selected_button.font_name = 'Roboto'
         
         # Update total label with current value
         current_text = main_screen.ids.total_label.text
@@ -428,11 +451,85 @@ class ExpenseTrackerApp(MDApp):
                 # Create list item
                 item = TwoLineListItem(
                     text=f"{amount_text} - {category_text}",
-                    secondary_text=secondary_text
-                )
-                main_screen.ids.expense_list.add_widget(item)
+                    secondary_text=secondary_text,
+                # Add a delete button to each item
+                # This will be dynamically added in Python
+                # item.add_widget(delete_button) # This is handled by the KV now
+            )
+            
+            # Add a checkbox for selection
+            checkbox = MDCheckbox(
+                size_hint_x=None,
+                width=dp(48),
+                on_release=lambda cb, expense_id=e.doc_id: self.toggle_expense_selection(cb, expense_id)
+            )
+            item.add_widget(checkbox)
+            
+            # Create a delete button for each item
+            delete_button = MDIconButton(
+                icon="delete",
+                pos_hint={"center_y": 0.5},
+                on_release=lambda x, expense_id=e.doc_id: self.confirm_delete_expense(expense_id)
+            )
+            item.add_widget(delete_button)
+            
+            main_screen.ids.expense_list.add_widget(item)
                 
         main_screen.ids.total_label.text = f"{TOTAL}: ETB {total:.2f}"
+
+    def toggle_expense_selection(self, checkbox, expense_id):
+        if checkbox.active:
+            self.selected_expenses.append(expense_id)
+        else:
+            if expense_id in self.selected_expenses:
+                self.selected_expenses.remove(expense_id)
+        print(f"Selected expenses: {self.selected_expenses}") # Debugging
+
+    def confirm_delete_expense(self, expense_id=None):
+        # If expense_id is provided, it's a single delete
+        if expense_id:
+            self.dialog = MDDialog(
+                text=_("are_you_sure_delete"),
+                buttons=[
+                    MDFlatButton(text=CANCEL, on_release=self.close_dialog),
+                    MDRaisedButton(text=DELETE, on_release=lambda x: self.delete_expense(expense_id))
+                ],
+            )
+        # If no expense_id, it's a multiple delete
+        elif self.selected_expenses:
+            self.dialog = MDDialog(
+                text=_("are_you_sure_delete_multiple").format(len(self.selected_expenses)),
+                buttons=[
+                    MDFlatButton(text=CANCEL, on_release=self.close_dialog),
+                    MDRaisedButton(text=DELETE_ALL, on_release=lambda x: self.delete_selected_expenses())
+                ],
+            )
+        else:
+            # No expenses selected for multiple delete
+            self.dialog = MDDialog(
+                text=NO_EXPENSES_SELECTED,
+                buttons=[
+                    MDFlatButton(text=OK, on_release=self.close_dialog)
+                ],
+            )
+        self.dialog.open()
+
+    def delete_expense(self, expense_id):
+        db.remove(doc_ids=[expense_id])
+        self.close_dialog(None)
+        self.update_list()
+        self.show_notification(_("expense_deleted"))
+
+    def delete_selected_expenses(self):
+        db.remove(doc_ids=self.selected_expenses)
+        self.selected_expenses = [] # Clear selection
+        self.close_dialog(None)
+        self.update_list()
+        self.show_notification(_("expenses_deleted"))
+
+    def show_notification(self, message):
+        # Placeholder for notification implementation
+        print(f"Notification: {message}")
 
 if __name__ == "__main__":
     ExpenseTrackerApp().run()
