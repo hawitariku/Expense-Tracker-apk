@@ -12,7 +12,7 @@ from kivy.core.text import LabelBase
 from kivy.metrics import dp
 
 # Register the Amharic font
-LabelBase.register(name='AmharicFont', fn_regular='fonts/NotoSansEthiopic-Regular.ttf')
+LabelBase.register(name='AmharicFont', fn_regular=os.path.join(os.path.dirname(__file__), 'fonts', 'NotoSansEthiopic-Regular.ttf'))
 from kivymd.app import MDApp
 from kivymd.uix.list import OneLineListItem, TwoLineListItem
 from kivymd.uix.button import MDRaisedButton, MDFlatButton, MDIconButton
