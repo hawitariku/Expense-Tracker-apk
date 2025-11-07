@@ -252,9 +252,9 @@ class ExpenseTrackerApp(MDApp):
                 etb_part = current_text.split(": ETB ")[1]
                 main_screen.ids.total_label.text = f'{_("Total")}: ETB {etb_part}'
             except:
-                main_screen.ids.total_label.text = f"{_("Total")}: ETB 0.00"
+                main_screen.ids.total_label.text = f'{_("Total")}: ETB 0.00'
         else:
-            main_screen.ids.total_label.text = f"{_("Total")}: ETB 0.00"
+            main_screen.ids.total_label.text = f'{_("Total")}: ETB 0.00'
 
     def add_expense(self):
         main_screen = self.get_main_screen()
