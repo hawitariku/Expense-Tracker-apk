@@ -348,7 +348,7 @@ class ExpenseTrackerApp(MDApp):
                 )
                 main_screen.ids.expense_list.add_widget(item)
                 
-        main_screen.ids.total_label.text = f"{_("Total")}: ETB {total:.2f}"
+        main_screen.ids.total_label.text = f'{_("Total")}: ETB {total:.2f}'
 
 if __name__ == "__main__":
     ExpenseTrackerApp().run()
