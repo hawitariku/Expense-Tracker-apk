@@ -22,51 +22,26 @@ from tinydb import TinyDB, Query
 # Set up gettext for internationalization
 current_language = 'en' # Default language
 
-# Use Kivy's app.directory for a more reliable path on Android
-if platform == 'android':
-    # On Android, app.directory points to the application's data directory
-    # which is where Buildozer places the app files.
-    app_instance = App.get_running_app() if App.get_running_app() else None
-    if app_instance:
-        localedir = os.path.join(app_instance.directory, 'locales')
-    else:
-        # Fallback if app is not yet running (e.g., during initial import)
-        localedir = os.path.join(os.path.dirname(__file__), 'locales')
-        Logger.warning("Translation: App instance not available, falling back to __file__ path.")
-else:
-    localedir = os.path.join(os.path.dirname(__file__), 'locales')
-
-Logger.info(f"Translation: Resolved localedir: {localedir}")
-
-try:
-    # Attempt to load translations for all supported languages
-    # This is done to ensure all translations are available for update_translations
-    # and to prevent errors if a language is selected before its .mo is loaded.
-    en_lang = gettext.translation('app', localedir, languages=['en'])
-    am_lang = gettext.translation('app', localedir, languages=['am'])
-    om_lang = gettext.translation('app', localedir, languages=['om'])
-    
-    # Initialize the global translation function _()
-    # We'll re-bind this when the language changes
-    _ = en_lang.gettext 
-    Logger.info("Translation: Initial English translations loaded.")
-
-except Exception as e:
-    Logger.error(f"Translation: Error loading initial translations: {e}")
-    # Fallback if translations fail to load
-    _ = lambda s: s # No-op translation
+# Global translation function, will be set in build()
+_ = lambda s: s # Default no-op
 
 def update_translations():
     global _
+    # localedir will be set on the app instance
+    app_instance = App.get_running_app()
+    if not app_instance or not hasattr(app_instance, 'localedir'):
+        Logger.error("Translation: App instance or localedir not available for update_translations.")
+        _ = lambda s: s
+        return
+
     try:
-        # Re-bind the global _ function to the currently selected language
-        lang_obj = gettext.translation('app', localedir, languages=[current_language])
-        lang_obj.install() # This makes _() available globally
+        lang_obj = gettext.translation('app', app_instance.localedir, languages=[current_language])
+        lang_obj.install()
         _ = lang_obj.gettext
         Logger.info(f"Translation: Translations updated to: {current_language}")
     except Exception as e:
         Logger.error(f"Translation: Error updating translations for {current_language}: {e}")
-        _ = lambda s: s # Fallback
+        _ = lambda s: s
 
 KV = """
 <MainScreen>:
@@ -167,6 +142,22 @@ class ExpenseTrackerApp(MDApp):
         Builder.load_string(KV)
         main_screen = MainScreen()
         self.sm.add_widget(main_screen)
+        
+        # Initialize localedir and translations here, after app is running
+        self.localedir = os.path.join(self.directory, 'locales')
+        Logger.info(f"Translation: App.directory resolved localedir: {self.localedir}")
+
+        global en_lang, am_lang, om_lang, _
+        try:
+            en_lang = gettext.translation('app', self.localedir, languages=['en'])
+            am_lang = gettext.translation('app', self.localedir, languages=['am'])
+            om_lang = gettext.translation('app', self.localedir, languages=['om'])
+            _ = en_lang.gettext # Set initial translation function
+            Logger.info("Translation: Initial English translations loaded in build().")
+        except Exception as e:
+            Logger.error(f"Translation: Error loading initial translations in build(): {e}")
+            _ = lambda s: s # Fallback
+
         self.update_list()
         self.update_ui_texts()
         return self.sm
@@ -215,9 +206,9 @@ class ExpenseTrackerApp(MDApp):
         """Load all translations for the app"""
         global en_lang, am_lang, om_lang
         try:
-            en_lang = gettext.translation('app', localedir, languages=['en'])
-            am_lang = gettext.translation('app', localedir, languages=['am'])
-            om_lang = gettext.translation('app', localedir, languages=['om'])
+            en_lang = gettext.translation('app', self.localedir, languages=['en'])
+            am_lang = gettext.translation('app', self.localedir, languages=['am'])
+            om_lang = gettext.translation('app', self.localedir, languages=['om'])
             Logger.info("Translation: All translation objects loaded successfully.")
         except Exception as e:
             Logger.error(f"Translation: Error in load_all_translations: {e}")
@@ -226,9 +217,21 @@ class ExpenseTrackerApp(MDApp):
         global current_language
         current_language = lang_code
         self.root.ids.lang_button.text = button_text
-        update_translations()
+        # Pass self.localedir to update_translations
+        self.update_translations_with_localedir(self.localedir)
         self.update_ui_texts()
         Logger.info(f"Translation: Language set to {lang_code}")
+
+    def update_translations_with_localedir(self, localedir_path):
+        global _
+        try:
+            lang_obj = gettext.translation('app', localedir_path, languages=[current_language])
+            lang_obj.install()
+            _ = lang_obj.gettext
+            Logger.info(f"Translation: Translations updated to: {current_language}")
+        except Exception as e:
+            Logger.error(f"Translation: Error updating translations for {current_language}: {e}")
+            _ = lambda s: s
 
     def update_ui_texts(self):
         main_screen = self.get_main_screen()
