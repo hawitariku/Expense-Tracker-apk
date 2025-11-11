@@ -1,5 +1,3 @@
-
-
 [app]
 
 # (str) Title of your application
@@ -15,16 +13,16 @@ package.domain = org.example
 source.dir = .
 
 # (list) Source files to include (let empty to include all the files)
-source.include_exts = py,png,jpg,kv,json,mo,po,pot
+source.include_exts = py,png,jpg,kv,json
 
 # (list) List of inclusions using pattern matching
-source.include_patterns = locales/*
+#source.include_patterns = assets/*,images/*.png
 
 # (list) Source files to exclude (let empty to not exclude anything)
 #source.exclude_exts = spec
 
 # (list) List of directory to exclude (let empty to not exclude anything)
-#source.exclude_dirs = tests, bin
+source.exclude_dirs = tests, bin, .buildozer, artifacts
 
 # (list) List of exclusions using pattern matching
 #source.exclude_patterns = license,images/*/*.jpg
@@ -38,7 +36,7 @@ version = 1.0
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3==3.9.17,hostpython3==3.9.17,kivy,kivymd==1.1.1,tinydb
+requirements = python3,kivy,kivymd,tinydb
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes

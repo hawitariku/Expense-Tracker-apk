@@ -4,25 +4,115 @@ A simple expense tracker application built with Kivy and KivyMD that can be comp
 
 ## Features
 
-- Add expenses with amount, category, and optional notes
-- View all expenses in a list
-- Calculate and display total expenses
-- Data persistence using TinyDB
+- ✅ **Add & Manage Expenses** - Track expenses with amount, category, and optional notes
+- ✅ **View Expenses** - Display all expenses in an organized list with dates
+- ✅ **Multi-Select Delete** - Select multiple expenses and delete them in batch
+- ✅ **Calculate Totals** - Automatically calculate and display total expenses
+- ✅ **Multi-Language Support** - Available in English, Amharic, and Oromo
+- ✅ **Data Persistence** - All data stored locally using TinyDB (JSON-based)
+- ✅ **Export Data** - Export expenses to file for backup or analysis
+- ✅ **Input Validation** - Safe parsing and validation of expense data
+- ✅ **Comprehensive Tests** - Unit tests for all core functionality
 
 ## Installation
 
-1. Install Python 3.11 (or 3.10)
-2. Install the required dependencies:
+### Requirements
+- Python 3.10+
+- pip (Python package manager)
+
+### Setup
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/wish628/Expensive-Tracker-apk.git
+   cd Expensive-Tracker-apk
    ```
+
+2. Install dependencies:
+   ```bash
    pip install -r requirements.txt
    ```
 
 ## Running the Application
 
-To run the application on desktop:
-```
+### Desktop (Development)
+
+```bash
 python main.py
 ```
+
+The app will start with the UI available. You can:
+- Add expenses
+- Switch languages (English / Amharic / Oromo)
+- Delete single or multiple expenses
+- Export data
+
+### Testing
+
+Run the comprehensive test suite:
+
+```bash
+# Run all tests
+pytest tests/
+
+# Run specific test categories
+pytest tests/test_translations_only.py       # Translation tests
+pytest tests/test_utils.py                   # Validation function tests
+pytest tests/test_db.py                      # Database tests
+pytest tests/test_desktop_validation.py      # Desktop environment tests
+
+# Run with verbose output
+pytest tests/ -v
+```
+
+**Test Coverage:**
+- 19 tests pass (1 skipped)
+- Database operations (CRUD)
+- Validation and error handling
+- Translation loading for all 3 languages
+- App structure and configuration validation
+
+### Code Quality
+
+The project uses automated code formatting and linting:
+
+```bash
+# Format code with autopep8
+autopep8 --in-place main.py utils.py
+
+# Check code style with flake8
+flake8 main.py utils.py
+```
+
+## Multi-Language Support
+
+The app supports three languages with complete translations:
+
+| Language | Code | Status |
+|----------|------|--------|
+| English | `en` | ✅ Complete |
+| Amharic | `am` | ✅ Complete |
+| Oromo | `om` | ✅ Complete |
+
+Switch languages using the language button in the app (EN/AM/OM).
+
+## Contributing
+
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Make your changes and add tests if needed
+4. Run the test suite to ensure nothing breaks
+5. Commit your changes (`git commit -am 'Add your feature'`)
+6. Push to the branch (`git push origin feature/your-feature`)
+7. Open a Pull Request
+
+### Code Standards
+
+- Follow PEP 8 style guidelines (enforced with flake8)
+- Write tests for new features
+- Keep the translation files updated for all 3 languages
 
 ## Building for Android
 

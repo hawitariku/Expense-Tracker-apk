@@ -1,0 +1,204 @@
+import os
+import pytest
+from kivy.app import App
+from main import ExpenseTrackerApp
+
+# First test just the translation functions without UI
+def test_translation_functions():
+    # Set up app and translations
+    app = ExpenseTrackerApp()
+    base_dir = os.path.dirname(os.path.dirname(__file__))
+    app.directory = base_dir
+    app.localedir = os.path.join(base_dir, 'locales')
+    
+    # Register the app instance globally
+    App.get_running_app = lambda: app
+    app._running = True  # Mark as running to enable translations
+
+    # Initialize English translations first
+    app.load_all_translations()
+    _ = app._get_text  # Get current translation function
+
+    # Test English translations
+    assert _("amount") == "Amount"
+    assert _("category") == "Category"
+    assert _("expense_tracker") == "Expense Tracker"
+    assert _("note") == "Note (optional)"
+    assert _("expense_list") == "Expense List"
+    assert _("clear") == "Clear"
+
+    # Test error messages
+    assert _("fill_all_fields") == "Please fill in all required fields"
+    assert _("no_expenses") == "No expenses recorded yet"
+    assert _("database_cleared") == "All expenses cleared"
+
+    # Test Amharic translations
+    app.set_language('am', 'AM')
+    _ = app._get_text
+    assert _("amount") == "መጠን"
+    assert _("category") == "ምድብ"
+    assert _("expense_tracker") == "የወጭ መቆጣጠሪያ"
+    assert _("note") == "ማስታወሻ (በምርጫ)"
+    assert _("add_expense") == "ወጭ ያክሉ"
+    assert _("total") == "ጠቅላላ"
+
+    # Test Oromo translations
+    app.set_language('om', 'OM')
+    _ = app._get_text
+    assert _("amount") == "Hammanta"
+    assert _("category") == "Gosa"
+    assert _("expense_tracker") == "Trackera Dabarsaa"
+    assert _("note") == "Yaadannoo (filannoo)"  # Update if this is different in the file
+
+# Helper to run functions in the Kivy event loop
+def run_in_kivy(func, timeout=1):
+    """Run a function in Kivy's event loop and wait for completion"""
+    done = []
+    def callback(dt):
+        try:
+            func()
+            done.append(True)
+        except:
+            done.append(False)
+            raise
+    
+    Clock.schedule_once(callback, 0)
+    for _ in range(int(timeout * 10)):  # Wait up to timeout seconds
+        if done:
+            return done[0]
+        Clock.tick()
+    return False
+
+@pytest.fixture
+def app(monkeypatch):
+    """Fixture to create and start the app for testing"""
+    from main import KV  # Import KV string from main.py
+    
+    app = ExpenseTrackerApp()
+    app._running = True
+    
+    try:
+        # Clean up any existing KV rules first
+        Builder.unload_file(None)
+        
+        # Set up minimal app environment
+        base_dir = os.path.dirname(os.path.dirname(__file__))
+        app.directory = base_dir
+        app.localedir = os.path.join(base_dir, 'locales')
+
+        # Initialize translations early
+        app.load_all_translations()
+        
+        # Initialize screen manager and load KV
+        app.sm = ScreenManager()
+        Builder.load_string(KV)
+
+        # Create and add main screen
+        from main import MainScreen
+        main_screen = MainScreen()
+        app.sm.add_widget(main_screen)
+        
+        # Set up App.get_running_app for translation system
+        App.get_running_app = lambda: app
+        
+        # Update UI texts after everything is set up
+        app.update_ui_texts()
+        
+        yield app
+    finally:
+        app._running = False
+        App.get_running_app = lambda: None
+        # Clean up Kivy resources
+        Builder.unload_file(None)  # Unload all loaded KV strings
+
+def test_initial_ui_texts(app):
+    """Test that UI elements show correct translations on startup"""
+    def check_initial_texts():
+        main_screen = app.get_main_screen()
+        assert main_screen is not None
+        
+        # Check initial English texts
+        assert main_screen.ids.title_label.text == "Expense Tracker"
+        assert main_screen.ids.amount.hint_text == "Amount"
+        assert main_screen.ids.category.hint_text == "Category"
+        assert main_screen.ids.note.hint_text == "Note (optional)"
+        assert main_screen.ids.add_button.text == "Add Expense"
+        assert main_screen.ids.clear_button.text == "Clear"
+        assert main_screen.ids.expense_list_label.text == "Expense List"
+        assert "Total: ETB" in main_screen.ids.total_label.text
+
+    assert run_in_kivy(check_initial_texts)
+
+def test_language_switching(app):
+    """Test that UI updates when switching languages"""
+    def switch_and_verify():
+        main_screen = app.get_main_screen()
+        assert main_screen is not None
+        
+        # Switch to Amharic
+        app.set_language('am', 'AM')
+        assert main_screen.ids.title_label.text == "የወጭ መቆጣጠሪያ"
+        assert main_screen.ids.amount.hint_text == "መጠን"
+        assert main_screen.ids.category.hint_text == "ምድብ"
+        
+        # Switch to Oromo
+        app.set_language('om', 'OM')
+        assert main_screen.ids.title_label.text == "Trackera Dabarsaa"
+        assert main_screen.ids.amount.hint_text == "Hammanta"
+        assert main_screen.ids.category.hint_text == "Gosa"
+        
+        # Switch back to English
+        app.set_language('en', 'EN')
+        assert main_screen.ids.title_label.text == "Expense Tracker"
+        assert main_screen.ids.amount.hint_text == "Amount"
+        assert main_screen.ids.category.hint_text == "Category"
+
+    assert run_in_kivy(switch_and_verify)
+
+def test_error_messages_translation(app):
+    """Test that error messages are properly translated"""
+    def check_error_messages():
+        main_screen = app.get_main_screen()
+        assert main_screen is not None
+        
+        # Test in English
+        app.set_language('en', 'EN')
+        # Get the current translation function
+        _ = app._get_text
+        assert _("invalid_amount") == "Please enter a valid amount"
+        assert _("no_selection") == "No items selected"
+        
+        # Test in Amharic
+        app.set_language('am', 'AM')
+        _ = app._get_text
+        assert _("invalid_amount") == "እባክዎን ትክክለኛ መጠን ያስገቡ"
+        assert _("no_selection") == "ምንም አልተመረጠም"
+        
+        # Test in Oromo
+        app.set_language('om', 'OM')
+        _ = app._get_text
+        assert _("invalid_amount") == "Maaloo hammanta sirrii galchi"
+        assert _("no_selection") == "Homaa hin filatamne"
+
+    assert run_in_kivy(check_error_messages)
+
+def test_dialog_texts_translation(app):
+    """Test that dialog texts (buttons, messages) are properly translated"""
+    def check_dialog_texts():
+        main_screen = app.get_main_screen()
+        assert main_screen is not None
+        
+        # Test in different languages
+        for lang, code, ok_text in [
+            ('en', 'EN', 'OK'),
+            ('am', 'AM', 'እሺ'),
+            ('om', 'OM', 'TOO')
+        ]:
+            app.set_language(lang, code)
+            # Check dialog button text
+            assert _("ok") == ok_text
+            # Check dialog messages
+            assert _("fill_all_fields") != "fill_all_fields"  # Should be translated
+            assert _("database_cleared") != "database_cleared"  # Should be translated
+
+    assert run_in_kivy(check_dialog_texts)

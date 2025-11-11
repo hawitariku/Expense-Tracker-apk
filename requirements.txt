@@ -1,3 +1,4 @@
 kivy==2.3.0
 kivymd==1.1.1
 tinydb==4.8.0
+plyer==2.0.0

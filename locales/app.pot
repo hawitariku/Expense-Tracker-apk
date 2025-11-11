@@ -28,3 +28,35 @@ msgstr ""
 #: main.py:47
 msgid "total"
 msgstr ""
+
+#: main.py:60
+msgid "no_expenses"
+msgstr ""
+
+#: main.py:999
+msgid "expense_added"
+msgstr ""
+
+msgid "expense_deleted"
+msgstr ""
+
+msgid "database_cleared"
+msgstr ""
+
+msgid "exported_to"
+msgstr ""
+
+msgid "no_data_to_export"
+msgstr ""
+
+msgid "no_selection"
+msgstr ""
+
+msgid "selection_deleted"
+msgstr ""
+
+msgid "invalid_amount"
+msgstr ""
+
+msgid "negative_amount"
+msgstr ""

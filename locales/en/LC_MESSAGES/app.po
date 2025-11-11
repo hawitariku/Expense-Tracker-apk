@@ -80,3 +80,31 @@ msgstr "Please fill in all required fields"
 #: main.py:60
 msgid "ok"
 msgstr "OK"
+
+#: main.py:999
+msgid "expense_added"
+msgstr "Expense added"
+
+msgid "expense_deleted"
+msgstr "Expense deleted"
+
+msgid "database_cleared"
+msgstr "All expenses cleared"
+
+msgid "exported_to"
+msgstr "Exported to"
+
+msgid "no_data_to_export"
+msgstr "No data to export"
+
+msgid "no_selection"
+msgstr "No items selected"
+
+msgid "selection_deleted"
+msgstr "Selected expenses deleted"
+
+msgid "invalid_amount"
+msgstr "Please enter a valid amount"
+
+msgid "negative_amount"
+msgstr "Amount cannot be negative"
