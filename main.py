@@ -3,13 +3,14 @@ import datetime
 import gettext
 import os
 from kivy.utils import platform  # Import platform
+from kivy.metrics import dp
 from kivy.app import App  # Import App for Android path resolution
 from kivy.logger import Logger  # Import Kivy's logger
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivymd.app import MDApp
-from kivymd.uix.list import OneLineListItem, TwoLineListItem, MDList
-from kivymd.uix.button import MDFlatButton, MDRaisedButton, MDIconButton
+from kivymd.uix.list import OneLineListItem, TwoLineListItem, MDList, TwoLineAvatarListItem, IconLeftWidget
+from kivymd.uix.button import MDFlatButton, MDRaisedButton, MDIconButton, MDFloatingActionButton
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.snackbar import Snackbar
@@ -33,6 +34,47 @@ def _(s): return s  # Default no-op
 
 # Fallback dictionary-based translations (populated by load_all_translations)
 TRANSLATIONS = {}
+
+# Small mapping from categories to icons for quicker scanning
+CATEGORY_ICON_MAP = {
+    'food': 'food',
+    'transport': 'car',
+    'rent': 'home',
+    'salary': 'cash',
+    'shopping': 'cart',
+    'medicine': 'pill',
+}
+
+
+def load_category_icon_overrides(directory):
+    """Load category->icon overrides from a JSON file in the project directory.
+
+    This allows customizing icons without changing code. File path:
+    <directory>/category_icons.json
+    """
+    path = os.path.join(directory, 'category_icons.json')
+    try:
+        if os.path.exists(path):
+            with open(path, 'r', encoding='utf-8') as fh:
+                data = json.load(fh)
+                if isinstance(data, dict):
+                    # normalize keys to lowercase
+                    return {k.lower(): v for k, v in data.items()}
+    except Exception:
+        pass
+    return {}
+
+
+def get_icon_for_category(category, directory=None):
+    if not category:
+        return 'cash'
+    key = category.strip().lower()
+    # check overrides first
+    if directory:
+        overrides = load_category_icon_overrides(directory)
+        if key in overrides:
+            return overrides[key]
+    return CATEGORY_ICON_MAP.get(key, 'cash')
 
 # Optional Android/native notifications via plyer
 try:
@@ -86,30 +128,12 @@ KV = """
 
         MDBoxLayout:
             orientation: "horizontal"
-            spacing: dp(8)
             size_hint_y: None
-            height: dp(56)
-
-            MDTextField:
-                id: amount
-                hint_text: "Amount"
-                input_filter: "float"
-                helper_text: "Enter amount in ETB"
-                helper_text_mode: "on_focus"
-
-            MDTextField:
-                id: category
-                hint_text: "Category"
-                helper_text: "e.g., Food, Transport, etc."
-                helper_text_mode: "on_focus"
-
-        MDTextField:
-            id: note
-            hint_text: "Note (optional)"
-            multiline: True
-            mode: "rectangle"
-            size_hint_y: None
-            height: dp(100)
+            height: dp(40)
+            MDLabel:
+                text: "Tap + to add an expense"
+                theme_text_color: "Secondary"
+                halign: "left"
 
         MDBoxLayout:
             orientation: "horizontal"
@@ -117,11 +141,7 @@ KV = """
             size_hint_y: None
             height: dp(48)
 
-            MDRaisedButton:
-                id: add_button
-                text: "Add Expense"
-                on_release: app.add_expense()
-                size_hint_x: 0.6
+            # Inline Add button removed in mobile-first UI; use FAB instead
 
             MDIconButton:
                 id: export_button
@@ -174,6 +194,16 @@ KV = """
         ScrollView:
             MDList:
                 id: expense_list
+
+        AnchorLayout:
+            anchor_x: 'right'
+            anchor_y: 'bottom'
+            MDFloatingActionButton:
+                id: fab_add
+                icon: 'plus'
+                md_bg_color: app.theme_cls.primary_color
+                elevation: 10
+                on_release: app.open_add_dialog()
 """
 
 # Defer DB creation until the App is running so we can choose a safe path
@@ -456,8 +486,39 @@ class ExpenseTrackerApp(MDApp):
             main_screen.ids.amount.hint_text = _("amount")
             main_screen.ids.category.hint_text = _("category")
             main_screen.ids.note.hint_text = _("note")
-            main_screen.ids.add_button.text = _("add_expense")
+            # Update Add button text only if present (desktop/testing)
+            try:
+                if 'add_button' in main_screen.ids:
+                    main_screen.ids.add_button.text = _("add_expense")
+            except Exception:
+                pass
             # export and delete buttons are icon-based; no text to update
+            # Add accessibility labels where possible (used by screen readers if available)
+            try:
+                if 'export_button' in main_screen.ids:
+                    main_screen.ids.export_button.accessibility_label = _('export')
+            except Exception:
+                pass
+            try:
+                if 'delete_selected_button' in main_screen.ids:
+                    main_screen.ids.delete_selected_button.accessibility_label = _('delete_selected')
+            except Exception:
+                pass
+            try:
+                if 'delete_all_button' in main_screen.ids:
+                    main_screen.ids.delete_all_button.accessibility_label = _('delete_all')
+            except Exception:
+                pass
+            try:
+                if 'select_all_checkbox' in main_screen.ids:
+                    main_screen.ids.select_all_checkbox.accessibility_label = _('select_all')
+            except Exception:
+                pass
+            try:
+                if 'fab_add' in main_screen.ids:
+                    main_screen.ids.fab_add.accessibility_label = _('add_expense')
+            except Exception:
+                pass
             main_screen.ids.expense_list_label.text = _("expense_list")
 
             # Update total label with current value (use translation key 'total')
@@ -477,6 +538,61 @@ class ExpenseTrackerApp(MDApp):
             self.update_action_buttons_visibility()
         except Exception:
             pass
+
+    def open_add_dialog(self):
+        """Open a modal dialog to add a new expense (FAB and Add button use this)."""
+        main_screen = self.get_main_screen()
+        if main_screen is None:
+            return
+
+        try:
+            content = MDBoxLayout(orientation='vertical', spacing=dp(8), padding=dp(8))
+            amount_field = MDTextField(hint_text=_('amount'), input_filter='float')
+            category_field = MDTextField(hint_text=_('category'))
+            note_field = MDTextField(hint_text=_('note'), multiline=True, mode='rectangle', size_hint_y=None, height=dp(100))
+
+            content.add_widget(amount_field)
+            content.add_widget(category_field)
+            content.add_widget(note_field)
+
+            def _on_confirm(instance):
+                # Copy values into main screen fields so existing add_expense() can reuse validation
+                try:
+                    main_screen.ids.amount.text = amount_field.text
+                    main_screen.ids.category.text = category_field.text
+                    main_screen.ids.note.text = note_field.text
+                except Exception:
+                    pass
+                # Close dialog then perform add
+                try:
+                    if self.dialog:
+                        self.dialog.dismiss()
+                        self.dialog = None
+                except Exception:
+                    pass
+                # Call existing add_expense flow
+                self.add_expense()
+
+            def _on_cancel(instance):
+                try:
+                    if self.dialog:
+                        self.dialog.dismiss()
+                        self.dialog = None
+                except Exception:
+                    pass
+
+            self.dialog = MDDialog(
+                title=_('add_expense'),
+                type='custom',
+                content_cls=content,
+                buttons=[
+                    MDFlatButton(text=_('cancel'), on_release=_on_cancel),
+                    MDFlatButton(text=_('add'), on_release=_on_confirm),
+                ],
+            )
+            self.dialog.open()
+        except Exception as e:
+            Logger.error(f"UI: Failed to open add dialog: {e}")
         except Exception as e:
             Logger.error(f"Translation: Error updating UI texts: {e}")
 
@@ -500,9 +616,16 @@ class ExpenseTrackerApp(MDApp):
         if main_screen is None:
             return
 
-        amount = main_screen.ids.amount.text
-        category = main_screen.ids.category.text
-        note = main_screen.ids.note.text
+        # Backwards-compatible: allow reading values from main screen fields
+        try:
+            amount = main_screen.ids.amount.text
+            category = main_screen.ids.category.text
+            note = main_screen.ids.note.text
+        except Exception:
+            # If inline fields were removed (mobile UI), fall back to empty strings
+            amount = ''
+            category = ''
+            note = ''
 
         # Use utils.validate_expense so we can unit test validation logic
         ok, err_key = validate_expense(amount, category)
@@ -523,7 +646,7 @@ class ExpenseTrackerApp(MDApp):
                 self.dialog.open()
             return
 
-        # Add to database with current date
+            # Add to database with current date
         try:
             db.insert({
                 "amount": float(amount),
@@ -558,9 +681,22 @@ class ExpenseTrackerApp(MDApp):
         if main_screen is None:
             return
 
-        main_screen.ids.amount.text = ""
-        main_screen.ids.category.text = ""
-        main_screen.ids.note.text = ""
+        # Inline fields may have been removed for mobile UI. Clear if present.
+        try:
+            if 'amount' in main_screen.ids:
+                main_screen.ids.amount.text = ""
+        except Exception:
+            pass
+        try:
+            if 'category' in main_screen.ids:
+                main_screen.ids.category.text = ""
+        except Exception:
+            pass
+        try:
+            if 'note' in main_screen.ids:
+                main_screen.ids.note.text = ""
+        except Exception:
+            pass
 
     def update_list(self):
         main_screen = self.get_main_screen()
@@ -600,10 +736,25 @@ class ExpenseTrackerApp(MDApp):
                     secondary_text = date_text
 
                 # Create list item
-                item = TwoLineListItem(
+                # Use TwoLineAvatarListItem with an icon for better scanning
+                item = TwoLineAvatarListItem(
                     text=f"{amount_text} - {category_text}",
-                    secondary_text=secondary_text
+                    secondary_text=secondary_text,
+                    size_hint_y=None,
+                    height=dp(64)
                 )
+                # Add a left icon (category default)
+                try:
+                    icon_name = get_icon_for_category(category_text, directory=self.directory)
+                    icon = IconLeftWidget(icon=icon_name)
+                    item.add_widget(icon)
+                except Exception:
+                    pass
+                # provide a simple accessibility label for the list item
+                try:
+                    item.accessibility_label = f"{category_text}: {amount_text}"
+                except Exception:
+                    pass
                 # Show selection prefix if selected
                 try:
                     prefix = "[x] " if doc_id in (

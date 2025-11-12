@@ -54,11 +54,12 @@ Once installed, test these features:
 - [ ] All buttons/fields visible
 
 ### ✅ Main Features
-- [ ] Add an expense:
-  - Enter amount (e.g., 100)
-  - Enter category (e.g., Food)
-  - Enter note (optional)
-  - Click "Add Expense"
+ - [ ] Add an expense:
+    - Tap the + Floating Action Button (bottom-right) to open the Add dialog
+    - Enter amount (e.g., 100)
+    - Enter category (e.g., Food)
+    - Enter note (optional)
+    - Tap "Add" in the dialog to save the expense
 - [ ] View expense in list
 - [ ] Total amount updates correctly
 - [ ] Delete expense (select + click delete)
@@ -103,6 +104,10 @@ After testing, please report:
 ```
 
 **Result:** Ready to create v1.3 Release! 🚀
+
+### Accessibility notes
+- The UI now uses larger touch targets for list items and exposes simple accessibility labels on controls (fab, export, delete).
+- For a full accessibility audit, test with TalkBack (Android) or VoiceOver (iOS) and verify focus order and live region announcements for add/delete events.
 
 ### ❌ If Issues Found
 Please provide:
