@@ -8,11 +8,17 @@ from kivy.logger import Logger  # Import Kivy's logger
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivymd.app import MDApp
-from kivymd.uix.list import OneLineListItem, TwoLineListItem
-from kivymd.uix.button import MDFlatButton
+from kivymd.uix.list import OneLineListItem, TwoLineListItem, MDList
+from kivymd.uix.button import MDFlatButton, MDRaisedButton, MDIconButton
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.snackbar import Snackbar
+from kivymd.uix.toolbar import MDTopAppBar
+from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.textfield import MDTextField
+from kivymd.uix.label import MDLabel
+from kivymd.uix.selectioncontrol import MDCheckbox
+from kivy.uix.scrollview import ScrollView
 from tinydb import TinyDB
 from utils import validate_expense
 
@@ -70,7 +76,7 @@ KV = """
         spacing: dp(8)
         padding: dp(8)
 
-        MDToolbar:
+        MDTopAppBar:
             id: toolbar
             title: "Expense Tracker"
             elevation: 10
