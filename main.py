@@ -244,7 +244,6 @@ KV = """
                     text: _("Add Expense")
                     on_release: app.add_expense()
                     size_hint_x: 1
-                    icon: "plus"
                     md_bg_color: app.theme_cls.primary_color
 
                 MDFlatButton:
