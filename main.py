@@ -69,209 +69,93 @@ def update_translations():
 
 
 KV = """
-#:kivy 2.0
-
 <MainScreen>:
     name: "main"
     MDBoxLayout:
         orientation: "vertical"
-        spacing: 0
-        padding: 0
-        
-        # Professional Top App Bar with Gradient Effect
+        spacing: dp(8)
+        padding: dp(8)
+
         MDTopAppBar:
             id: toolbar
             title: _("Expense Tracker")
-            elevation: 4
+            elevation: 10
             md_bg_color: app.theme_cls.primary_color
-            left_action_items: [["menu", lambda x: None]]
-            right_action_items: [["plus-circle", lambda x: app.show_add_dialog()], ["language", lambda x: app.show_language_menu()]]
+            left_action_items: []
+            right_action_items: [["language", lambda x: app.show_language_menu()]]
+
+        MDBoxLayout:
+            orientation: "horizontal"
+            spacing: dp(8)
             size_hint_y: None
             height: dp(56)
 
-        # Summary Card Section - Professional Dashboard Style
-        MDBoxLayout:
-            orientation: "vertical"
-            spacing: dp(12)
-            padding: dp(12)
-            size_hint_y: None
-            height: dp(180)
-
-            # Total Amount Card
-            MDBoxLayout:
-                orientation: "vertical"
-                spacing: dp(4)
-                
-                MDLabel:
-                    text: _("Total Balance")
-                    font_style: "Caption"
-                    theme_text_color: "Secondary"
-                    halign: "left"
-                    size_hint_y: None
-                    height: dp(16)
-                
-                MDLabel:
-                    id: total_label
-                    text: "ETB 0.00"
-                    font_style: "H3"
-                    theme_text_color: "Primary"
-                    halign: "left"
-                    size_hint_y: None
-                    height: dp(48)
-                    bold: True
-
-            # Stats Row - Item Count
-            MDBoxLayout:
-                orientation: "horizontal"
-                spacing: dp(16)
-                size_hint_y: None
-                height: dp(60)
-
-                MDBoxLayout:
-                    orientation: "vertical"
-                    spacing: dp(4)
-                    size_hint_x: 0.5
-
-                    MDLabel:
-                        text: _("Total Expenses")
-                        font_style: "Caption"
-                        theme_text_color: "Secondary"
-                        halign: "center"
-                        size_hint_y: None
-                        height: dp(16)
-
-                    MDLabel:
-                        id: count_label
-                        text: "0"
-                        font_style: "H5"
-                        theme_text_color: "Primary"
-                        halign: "center"
-                        size_hint_y: None
-                        height: dp(32)
-
-                MDBoxLayout:
-                    orientation: "vertical"
-                    spacing: dp(4)
-                    size_hint_x: 0.5
-
-                    MDLabel:
-                        text: _("Average")
-                        font_style: "Caption"
-                        theme_text_color: "Secondary"
-                        halign: "center"
-                        size_hint_y: None
-                        height: dp(16)
-
-                    MDLabel:
-                        id: avg_label
-                        text: "ETB 0.00"
-                        font_style: "H6"
-                        theme_text_color: "Primary"
-                        halign: "center"
-                        size_hint_y: None
-                        height: dp(32)
-
-        # Input Form Section
-        MDBoxLayout:
-            orientation: "vertical"
-            spacing: dp(12)
-            padding: dp(16)
-            size_hint_y: None
-            height: dp(240)
-
-            # Form Title
-            MDLabel:
-                text: _("Add New Expense")
-                font_style: "Subtitle1"
-                theme_text_color: "Primary"
-                halign: "left"
-                size_hint_y: None
-                height: dp(24)
-                bold: True
-
-            # Amount Input
             MDTextField:
                 id: amount
-                hint_text: _("Amount (ETB)")
+                hint_text: _("Amount")
                 input_filter: "float"
-                mode: "rectangle"
-                size_hint_y: None
-                height: dp(48)
+                helper_text: _("Enter amount in ETB")
+                helper_text_mode: "on_focus"
 
-            # Category Input
             MDTextField:
                 id: category
                 hint_text: _("Category")
-                mode: "rectangle"
-                size_hint_y: None
-                height: dp(48)
-                helper_text: _("e.g., Food, Transport, Entertainment")
+                helper_text: _("e.g., Food, Transport")
                 helper_text_mode: "on_focus"
 
-            # Note Input
-            MDTextField:
-                id: note
-                hint_text: _("Notes (optional)")
-                mode: "rectangle"
-                multiline: True
-                size_hint_y: None
-                height: dp(60)
+        MDTextField:
+            id: note
+            hint_text: _("Note (optional)")
+            multiline: True
+            mode: "rectangle"
+            size_hint_y: None
+            height: dp(100)
 
-            # Action Buttons
-            MDBoxLayout:
-                orientation: "horizontal"
-                spacing: dp(12)
-                size_hint_y: None
-                height: dp(48)
-
-                MDRaisedButton:
-                    id: add_button
-                    text: _("Add Expense")
-                    on_release: app.add_expense()
-                    size_hint_x: 1
-                    md_bg_color: app.theme_cls.primary_color
-
-                MDFlatButton:
-                    id: clear_form_button
-                    text: _("Clear")
-                    on_release: app.clear_form()
-                    size_hint_x: 0.4
-
-        # Expense List Section Header and Toolbar
         MDBoxLayout:
             orientation: "horizontal"
-            spacing: dp(12)
-            padding: dp(16)
-            padding_y: dp(8)
+            spacing: dp(8)
             size_hint_y: None
             height: dp(48)
 
-            MDLabel:
-                id: expense_list_label
-                text: _("Expense History")
-                font_style: "Subtitle1"
-                theme_text_color: "Primary"
-                halign: "left"
-                bold: True
+            MDRaisedButton:
+                id: add_button
+                text: _("Add Expense")
+                on_release: app.add_expense()
+                size_hint_x: 0.6
 
             MDIconButton:
                 id: export_button
                 icon: "download"
-                icon_size: "24sp"
                 on_release: app.export_database()
 
             MDIconButton:
                 id: delete_all_button
                 icon: "delete-multiple"
-                icon_size: "24sp"
                 on_release: app.confirm_clear_database()
 
-        # Expense List with Scroll View
+        MDBoxLayout:
+            orientation: "horizontal"
+            size_hint_y: None
+            height: dp(36)
+            MDLabel:
+                id: total_label
+                text: _("Total: ETB 0.00")
+                halign: "left"
+                font_style: "H6"
+                theme_text_color: "Primary"
+
+        MDLabel:
+            id: expense_list_label
+            text: _("Expense List")
+            halign: "left"
+            font_style: "Subtitle1"
+            theme_text_color: "Secondary"
+            size_hint_y: None
+            height: dp(28)
+
         ScrollView:
             MDList:
                 id: expense_list
-                spacing: dp(8)
-                padding: dp(8)
 """
 
 # Defer DB creation until the App is running so we can choose a safe path
@@ -733,13 +617,6 @@ class ExpenseTrackerApp(MDApp):
 
         # Update total label with new format
         main_screen.ids.total_label.text = f'ETB {total:.2f}'
-        
-        # Update count label
-        main_screen.ids.count_label.text = str(count)
-        
-        # Update average label
-        average = (total / count) if count > 0 else 0
-        main_screen.ids.avg_label.text = f'ETB {average:.2f}'
 
         # Update select-all checkbox state
         try:
