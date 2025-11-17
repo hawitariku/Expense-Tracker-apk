@@ -21,6 +21,8 @@ from kivymd.uix.selectioncontrol import MDCheckbox
 from kivy.uix.scrollview import ScrollView
 from tinydb import TinyDB
 from utils import validate_expense
+import traceback
+import sys
 
 # Set up gettext for internationalization
 current_language = 'en'  # Default language
@@ -192,76 +194,121 @@ class ExpenseTrackerApp(MDApp):
         return _
 
     def build(self):
-        self.sm = ScreenManager()
-        # Load the KV string and create the screen
-        Builder.load_string(KV)
-        main_screen = MainScreen()
-        self.sm.add_widget(main_screen)
-
-        # Initialize localedir and translations here, after app is running
-        self.localedir = os.path.join(self.directory, 'locales')
-        Logger.info(
-            f"Translation: App.directory resolved localedir: {self.localedir}")
-
-        # Initialize TinyDB using a safe writable path. On Android use
-        # the app's user_data_dir; otherwise fall back to the project
-        # directory (useful for desktop/testing).
-        global db
         try:
-            if platform == 'android':
-                db_path = os.path.join(self.user_data_dir, 'expenses.json')
-            else:
-                db_path = os.path.join(self.directory, 'expenses.json')
-            Logger.info(f"DB: Initializing TinyDB at: {db_path}")
-            db = TinyDB(db_path)
-        except Exception as e:
-            Logger.error(f"DB: Failed to initialize TinyDB: {e}")
-            # Fall back to an in-memory list-like shim to avoid crashes
-            # (this keeps the app running though data won't persist).
-            class _InMemoryDB:
-                def __init__(self):
-                    self._data = []
+            self.sm = ScreenManager()
+            # Load the KV string and create the screen
+            Builder.load_string(KV)
+            main_screen = MainScreen()
+            self.sm.add_widget(main_screen)
 
-                def all(self):
-                    return list(self._data)
-
-                def insert(self, d):
-                    # emulate tinydb.Document behaviour minimally
-                    d = dict(d)
-                    d['doc_id'] = len(self._data) + 1
-                    self._data.append(d)
-
-                def remove(self, **kwargs):
-                    # naive remove by doc_ids
-                    doc_ids = kwargs.get('doc_ids') or []
-                    if not doc_ids:
-                        return
-                    self._data = [d for d in self._data if d.get('doc_id') not in doc_ids]
-
-            db = _InMemoryDB()
-
-        global en_lang, am_lang, om_lang, _
-        try:
-            en_lang = gettext.translation(
-                'app', self.localedir, languages=['en'])
-            am_lang = gettext.translation(
-                'app', self.localedir, languages=['am'])
-            om_lang = gettext.translation(
-                'app', self.localedir, languages=['om'])
-            _ = en_lang.gettext  # Set initial translation function
+            # Initialize localedir and translations here, after app is running
+            self.localedir = os.path.join(self.directory, 'locales')
             Logger.info(
-                "Translation: Initial English translations loaded in build().")
-        except Exception as e:
-            Logger.error(
-                f"Translation: Error loading initial translations in build(): {e}")
+                f"Translation: App.directory resolved localedir: {self.localedir}")
 
-            def _(s): return s  # Fallback
+            # Initialize TinyDB using a safe writable path. On Android use
+            # the app's user_data_dir; otherwise fall back to the project
+            # directory (useful for desktop/testing).
+            global db
+            try:
+                if platform == 'android':
+                    db_path = os.path.join(self.user_data_dir, 'expenses.json')
+                else:
+                    db_path = os.path.join(self.directory, 'expenses.json')
+                Logger.info(f"DB: Initializing TinyDB at: {db_path}")
+                db = TinyDB(db_path)
+            except Exception as e:
+                Logger.error(f"DB: Failed to initialize TinyDB: {e}")
+                # Fall back to an in-memory list-like shim to avoid crashes
+                # (this keeps the app running though data won't persist).
+                class _InMemoryDB:
+                    def __init__(self):
+                        self._data = []
 
-        self.update_list()
-        self.update_ui_texts()
-        # Initialize selected set for multi-select without adding new widgets
-        self.selected_ids = set()
-        return self.sm
+                    def all(self):
+                        return list(self._data)
+
+                    def insert(self, d):
+                        # emulate tinydb.Document behaviour minimally
+                        d = dict(d)
+                        d['doc_id'] = len(self._data) + 1
+                        self._data.append(d)
+
+                    def remove(self, **kwargs):
+                        # naive remove by doc_ids
+                        doc_ids = kwargs.get('doc_ids') or []
+                        if not doc_ids:
+                            return
+                        self._data = [d for d in self._data if d.get('doc_id') not in doc_ids]
+
+                db = _InMemoryDB()
+
+            global en_lang, am_lang, om_lang, _
+            try:
+                en_lang = gettext.translation(
+                    'app', self.localedir, languages=['en'])
+                am_lang = gettext.translation(
+                    'app', self.localedir, languages=['am'])
+                om_lang = gettext.translation(
+                    'app', self.localedir, languages=['om'])
+                _ = en_lang.gettext  # Set initial translation function
+                Logger.info(
+                    "Translation: Initial English translations loaded in build().")
+            except Exception as e:
+                Logger.error(
+                    f"Translation: Error loading initial translations in build(): {e}")
+
+                def _(s): return s  # Fallback
+
+            self.update_list()
+            self.update_ui_texts()
+            # Initialize selected set for multi-select without adding new widgets
+            self.selected_ids = set()
+            return self.sm
+        except Exception:
+            # Capture full traceback and write to a persistent location so
+            # the user can retrieve it from the device if the app crashes.
+            tb = traceback.format_exc()
+            Logger.error(f"Startup: Exception during build(): {tb}")
+            # Try to write to a writable location. Prefer user_data_dir on Android,
+            # otherwise use the project directory; also try /sdcard/Download as a
+            # last-resort common path accessible to the user/device.
+            try_paths = []
+            try:
+                if hasattr(self, 'user_data_dir') and self.user_data_dir:
+                    try_paths.append(self.user_data_dir)
+            except Exception:
+                pass
+            try_paths.append(self.directory)
+            try_paths.append('/sdcard/Download')
+
+            written = False
+            for p in try_paths:
+                try:
+                    os.makedirs(p, exist_ok=True)
+                    log_path = os.path.join(p, 'startup_error.log')
+                    with open(log_path, 'w', encoding='utf-8') as f:
+                        f.write(tb)
+                    Logger.info(f"Startup: Wrote startup_error.log to: {log_path}")
+                    written = True
+                    break
+                except Exception as e:
+                    Logger.error(f"Startup: Failed to write startup_error.log to {p}: {e}")
+
+            # Create a minimal fallback UI so the app doesn't hard-crash immediately.
+            try:
+                self.sm = ScreenManager()
+                err_screen = Screen(name='error')
+                box = MDBoxLayout(orientation='vertical')
+                box.add_widget(MDLabel(text=_('Startup error occurred. See startup_error.log'), halign='center'))
+                err_screen.add_widget(box)
+                self.sm.add_widget(err_screen)
+                return self.sm
+            except Exception:
+                # If even creating the minimal UI fails, re-raise so the crash
+                # surfaces to logcat; the startup_error.log should have been written
+                # if possible above.
+                raise
 
     def get_main_screen(self):
         """Safely get the main screen"""
