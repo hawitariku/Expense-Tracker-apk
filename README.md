@@ -24,7 +24,7 @@ A simple expense tracker application built with Kivy and KivyMD that can be comp
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/wish628/Expensive-Tracker-apk.git
+   git clone https://github.com/hawitariku/Expensive-Tracker-apk.git
    cd Expensive-Tracker-apk
    ```
 
@@ -32,57 +32,6 @@ A simple expense tracker application built with Kivy and KivyMD that can be comp
    ```bash
    pip install -r requirements.txt
    ```
-
-## Running the Application
-
-### Desktop (Development)
-
-```bash
-python main.py
-```
-
-The app will start with the UI available. You can:
-- Add expenses
-- Switch languages (English / Amharic / Oromo)
-- Delete single or multiple expenses
-- Export data
-
-### Testing
-
-Run the comprehensive test suite:
-
-```bash
-# Run all tests
-pytest tests/
-
-# Run specific test categories
-pytest tests/test_translations_only.py       # Translation tests
-pytest tests/test_utils.py                   # Validation function tests
-pytest tests/test_db.py                      # Database tests
-pytest tests/test_desktop_validation.py      # Desktop environment tests
-
-# Run with verbose output
-pytest tests/ -v
-```
-
-**Test Coverage:**
-- 19 tests pass (1 skipped)
-- Database operations (CRUD)
-- Validation and error handling
-- Translation loading for all 3 languages
-- App structure and configuration validation
-
-### Code Quality
-
-The project uses automated code formatting and linting:
-
-```bash
-# Format code with autopep8
-autopep8 --in-place main.py utils.py
-
-# Check code style with flake8
-flake8 main.py utils.py
-```
 
 ## Multi-Language Support
 
